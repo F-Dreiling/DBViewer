@@ -15,77 +15,34 @@ class Backend {
         if ($this->connection->errorCode() > 0) {
             throw new PDOException("Connection failed with error code " . $this->connection->errorCode());   
         }
-        else {
-            $this->data = new Data();
-        }
+
+        $this->data = new Data();
     }
 
     function fetchOne($table, $key, $id) {
         $this->data->tableName = $table;
 
         // Check if table exists
-        $stmt = $this->connection->prepare("SHOW TABLES LIKE :table");
-        $stmt->bindParam(':table', $table);
-        $stmt->execute();
-        if ($stmt->rowCount() == 0) {
-            throw new PDOException("Table $table does not exist in the database");
-        }
+        $this->checkTableExists($table);
 
         // Fetch data from the table
         $stmt = $this->connection->query("SELECT * FROM $table WHERE $key = $id LIMIT 1");
 
-        // Get Column Count
-        $this->data->columnCount = $stmt->columnCount();
-
-        // Get Column Names
-        $columnNames = [];
-        for ($i = 0; $i < $stmt->columnCount(); $i++) {
-            $meta = $stmt->getColumnMeta($i);
-            $columnNames[] = $meta['name'];
-        }
-
-        $this->data->columnNames = $columnNames;
-
-        // Fetch Data
-        $tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->data->tableData = $tableData;
-
-        // Get Row Count
-        $this->data->rowCount = 1;
+        // Get Data
+        $this->populateData($stmt);
     }
 
     function fetchAll($table) {
         $this->data->tableName = $table;
 
         // Check if table exists
-        $stmt = $this->connection->prepare("SHOW TABLES LIKE :table");
-        $stmt->bindParam(':table', $table);
-        $stmt->execute();
-        if ($stmt->rowCount() == 0) {
-            throw new PDOException("Table $table does not exist in the database");
-        }
+        $this->checkTableExists($table);
 
         // Fetch data from the table
         $stmt = $this->connection->query("SELECT * FROM $table");
 
-        // Get Column Count
-        $this->data->columnCount = $stmt->columnCount();
-
-        // Get Column Names
-        $columnNames = [];
-        for ($i = 0; $i < $stmt->columnCount(); $i++) {
-            $meta = $stmt->getColumnMeta($i);
-            $columnNames[] = $meta['name'];
-        }
-
-        $this->data->columnNames = $columnNames;
-
-        // Fetch Data
-        $tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $this->data->tableData = $tableData;
-
-        // Get Row Count
-        $this->data->rowCount = count($tableData);
+        // Get Data
+        $this->populateData($stmt);
     }
 
     function renderHtml() {
@@ -94,20 +51,23 @@ class Backend {
         $result .= "<p>Column Count: ".$this->data->columnCount."</p>";
 
         $result .= "<table class='table table-bordered'>";
-        $result .= "<thead>";
-        $result .= "<tr>";
+        $result .= "<thead><tr>";
         
         foreach ($this->data->columnNames as $column) {
             $result .= "<th>".htmlentities($column)."</th>";
         }
+
         $result .= "</tr></thead><tbody>";
         
         $key = $this->data->columnNames[0];
+
         foreach ($this->data->tableData as $row) {
             $result .= "<tr onclick=\"clickRow('".$key."', ".$row[$key].")\">";
+
             foreach ($row as $cell) {
                 $result .= "<td>".htmlentities($cell)."</td>";
             }
+
             $result .= "</tr>";
         }
 
@@ -118,6 +78,45 @@ class Backend {
 
     function renderJson() {
         return json_encode($this->data->jsonSerialize());
+    }
+
+    private function checkTableExists($table)
+    {
+        $stmt = $this->connection->prepare(
+            "SHOW TABLES LIKE :table"
+        );
+
+        $stmt->bindParam(':table', $table);
+        $stmt->execute();
+
+        if ($stmt->rowCount() === 0) {
+            throw new PDOException(
+                "Table $table does not exist in the database"
+            );
+        }
+    }
+
+    private function getColumnNames(PDOStatement $stmt)
+    {
+        $columnNames = [];
+
+        for ($i = 0; $i < $stmt->columnCount(); $i++) {
+            $meta = $stmt->getColumnMeta($i);
+            $columnNames[] = $meta['name'];
+        }
+
+        return $columnNames;
+    }
+
+    private function populateData(PDOStatement $stmt)
+    {
+        $tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->data->columnCount = $stmt->columnCount();
+        $this->data->columnNames = $this->getColumnNames($stmt);
+
+        $this->data->tableData = $tableData;
+        $this->data->rowCount = count($tableData);
     }
 }
 
