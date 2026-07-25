@@ -1,87 +1,16 @@
 <?php
     session_start();
 
-    if(isset($_POST['submit'])) {
+    require_once 'includes/functions.php';
 
-        if (strlen($_POST['host']) > 0 && strlen($_POST['port']) > 0 && strlen($_POST['dbName']) > 0 && strlen($_POST['table']) > 0 && strlen($_POST['userName']) > 0) {
-            $_SESSION['host'] = $_POST['host'];
-            $_SESSION['port'] = $_POST['port'];
-            $_SESSION['dbName'] = $_POST['dbName'];
-            $_SESSION['table'] = $_POST['table'];
-            $_SESSION['userName'] = $_POST['userName'];
-            $_SESSION['passWord'] = $_POST['passWord'] ?? "";
-            $_SESSION['load'] = 'load';
-        } 
-        else {
-            $_SESSION['error'] = "Missing host, port, database name, table or username";
-            unset($_SESSION['success']);
-            unset($_SESSION['load']);
-        }
+    handleSubmit();
+    handleRefresh();
+    handleReset();
 
-        header("Location: index.php");
-        return;
-    }
-    else if (isset($_POST['refresh'])) {
+    $response = null;
 
-        if (strlen($_POST['table']) > 0) {
-            $_SESSION['table'] = $_POST['table'];
-            $_SESSION['load'] = 'load';
-        }
-        else {
-            $_SESSION['error'] = "Missing table name";
-            unset($_SESSION['host']);
-            unset($_SESSION['port']);
-            unset($_SESSION['dbName']);
-            unset($_SESSION['table']);
-            unset($_SESSION['userName']);
-            unset($_SESSION['passWord']);
-            unset($_SESSION['success']);
-            unset($_SESSION['load']);
-        }
-
-        header("Location: index.php");
-        return;
-    }
-
-    if (isset($_SESSION['load'])) {
-        // URL to Backend
-        $url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") 
-            . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) .'/server/server.php/gethtml';
-        $params = [
-            'host' => $_SESSION['host'],
-            'port' => $_SESSION['port'],
-            'db' => $_SESSION['dbName'],
-            'table' => $_SESSION['table'],
-            'user' => $_SESSION['userName'],
-            'pass' => $_SESSION['passWord']
-        ];
-        $url .= '?' . http_build_query($params);
-
-        try {
-            $response = file_get_contents($url);
-
-            if ($response === false || $response === "") {
-                throw new Exception("Error fetching data from the server");
-            }
-            else if (substr($response, 0, 5) === "Error") {
-                throw new Exception($response);
-            }
-
-            $_SESSION['success'] = "Fetched data from the database successfully";
-            unset($_SESSION['error']);
-        } 
-        catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            unset($_SESSION['success']);
-            unset($_SESSION['load']);
-
-            unset($_SESSION['host']);
-            unset($_SESSION['port']);
-            unset($_SESSION['dbName']);
-            unset($_SESSION['table']);
-            unset($_SESSION['userName']);
-            unset($_SESSION['passWord']);
-        }
+    if ( isset($_SESSION['load']) ) {
+        $response = fetchTableHtml();
     }
 ?>
 
@@ -118,7 +47,9 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center gap-2 w-100">
-            <a href='reset.php' type='button' class='btn btn-secondary'>&lt;&lt; Reset</a>
+            <form action="index.php" method="POST">
+                <button type="submit" name="reset" class="btn btn-secondary">&lt;&lt; Reset</button>
+            </form>
 
             <form action="index.php" method="POST">
                 <label for="table">Table:</label>
