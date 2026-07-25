@@ -7,36 +7,36 @@ $backend = new Backend();
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-routeRequest($requestMethod, $requestUri, $backend);
+routeRequest( $requestMethod, $requestUri, $backend );
 
 function routeRequest(string $method, string $uri, Backend $backend): void
 {
-    if ($method === 'POST' && $uri === '/dbviewer/server/server.php/getone') {
+    if ( $method === 'POST' && $uri === '/dbviewer/server/server.php/getone' ) {
         handleGetOne($backend);
         return;
     }
 
-    if ($method === 'GET' && $uri === '/dbviewer/server/server.php/getall') {
+    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/getall' ) {
         handleGetAll($backend);
         return;
     }
 
-    if ($method === 'GET' && $uri === '/dbviewer/server/server.php/gethtml') {
+    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/gethtml' ) {
         handleGetHtml($backend);
         return;
     }
 
-    sendText("Invalid Request on {$uri}", 400);
+    sendText( "Invalid Request on {$uri}", 400 );
 }
 
 function handleGetOne(Backend $backend): void
 {
-    parse_str(file_get_contents('php://input'), $params);
+    parse_str( file_get_contents('php://input'), $params );
 
     if ( empty($params['id']) || !is_numeric($params['id']) || empty($params['db']) || empty($params['table']) || empty($params['user']) ) {
-        sendJson(json_encode([
+        sendJson( json_encode([
             "error" => "Invalid Data received"
-        ]), 400);
+        ]), 400 );
     }
 
     $host  = $params['host'] ?? 'localhost';
@@ -48,27 +48,28 @@ function handleGetOne(Backend $backend): void
     $key   = $params['key'] ?? 'id';
     $id    = $params['id'];
 
-    try {
-        $backend->connect($host, $port, $db, $user, $pass);
-        $backend->fetchOne($table, $key, $id);
+    
+    $result = $backend->connect($host, $port, $db, $user, $pass);
 
-        sendJson($backend->renderJson());
-
-    } catch (PDOException $e) {
-
-        sendJson(json_encode([
-            "error" => $e->getMessage() . ", for " . $host . " " . $port . " " . $db . " " . $user . " " . $table . " " . $key . " " . $id
-        ]), 500);
-
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 500 );
     }
+
+    $result = $backend->fetchOne($table, $key, $id);
+
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 400 );
+    }
+
+    sendJson( $backend->renderJson() );
 }
 
 function handleGetAll(Backend $backend): void
 {
     if ( empty($_GET['db']) || empty($_GET['table']) || empty($_GET['user']) ) {
-        sendJson(json_encode([
+        sendJson( json_encode([
             "error" => "Invalid Data received"
-        ]), 400);
+        ]), 400 );
     }
 
     $host  = $_GET['host'] ?? 'localhost';
@@ -78,25 +79,26 @@ function handleGetAll(Backend $backend): void
     $user  = $_GET['user'];
     $pass  = $_GET['pass'] ?? '';
 
-    try {
-        $backend->connect($host, $port, $db, $user, $pass);
-        $backend->fetchAll($table);
+    
+    $result = $backend->connect($host, $port, $db, $user, $pass);
 
-        sendJson($backend->renderJson());
-
-    } catch (PDOException $e) {
-
-        sendJson(json_encode([
-            "error" => $e->getMessage() . ", for " . $host . " " . $port . " " . $db . " " . $user . " " . $table
-        ]), 500);
-
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 500 );
     }
+
+    $result = $backend->fetchAll($table);
+
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 400 );
+    }
+
+    sendJson( $backend->renderJson() );
 }
 
 function handleGetHtml(Backend $backend): void
 {
     if ( empty($_GET['db']) || empty($_GET['table']) || empty($_GET['user']) ) {
-        sendJson(json_encode([
+        sendJson( json_encode([
             "error" => "Invalid Data received"
         ]), 400);
     }
@@ -108,19 +110,19 @@ function handleGetHtml(Backend $backend): void
     $user  = $_GET['user'];
     $pass  = $_GET['pass'] ?? '';
 
-    try {
-        $backend->connect($host, $port, $db, $user, $pass);
-        $backend->fetchAll($table);
+    $result = $backend->connect($host, $port, $db, $user, $pass);
 
-        sendHtml($backend->renderHtml());
-
-    } catch (PDOException $e) {
-
-        sendHtml(
-            "error: " . $e->getMessage() . ", for " . $host . " " . $port . " " . $db . " " . $user . " " . $table
-        , 500);
-
+    if ( !$result["success"] ) {
+        sendHtml( "error: " . $result["error"], 500 );
     }
+
+    $result = $backend->fetchAll($table);
+    
+    if ( !$result["success"] ) {
+        sendHtml( "error: " . $result["error"], 400 );
+    }
+
+    sendHtml( $backend->renderHtml() );
 }
 
 function sendJson(string $json, int $status = 200): void

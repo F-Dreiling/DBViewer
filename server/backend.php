@@ -7,42 +7,84 @@ class Backend {
     private $data;
 
     function connect($host, $port, $dbName, $user, $pass) {
-        // Create connection
-        $this->connection = new PDO("mysql:host=$host;port=$port;dbname=$dbName", $user, $pass);
-        $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            // Create connection
+            $this->connection = new PDO( "mysql:host=$host;port=$port;dbname=$dbName", $user, $pass );
+            $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-        // Check connection
-        if ($this->connection->errorCode() > 0) {
-            throw new PDOException("Connection failed with error code " . $this->connection->errorCode());   
+            $this->data = new Data();
+
+            return [
+                "success" => true
+            ];
         }
-
-        $this->data = new Data();
+        catch (PDOException $e) {
+            return [
+                "success" => false,
+                "error" => "Database connection failed"
+            ];
+        }
     }
 
     function fetchOne($table, $key, $id) {
-        $this->data->tableName = $table;
+        try {
+            // Validate table names
+            $table = $this->validateIdentifier($table);
+            $key = $this->validateIdentifier($key);
 
-        // Check if table exists
-        $this->checkTableExists($table);
+            $this->data->tableName = $table;
 
-        // Fetch data from the table
-        $stmt = $this->connection->query("SELECT * FROM $table WHERE $key = $id LIMIT 1");
+            // Check if table exists
+            $this->checkTableExists($table);
 
-        // Get Data
-        $this->populateData($stmt);
+            // Fetch data from the table
+            $stmt = $this->connection->prepare( "SELECT * FROM `$table` WHERE `$key` = :id LIMIT 1" );
+
+            $stmt->bindValue(':id', $id);
+
+            $stmt->execute();
+
+            // Get Data
+            $this->populateData($stmt);
+
+            return [
+                "success" => true
+            ];
+        } 
+        catch (Exception $e) {
+            return [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+        }
     }
 
     function fetchAll($table) {
-        $this->data->tableName = $table;
+        try {
+            // Validate table names
+            $table = $this->validateIdentifier($table);
 
-        // Check if table exists
-        $this->checkTableExists($table);
+            $this->data->tableName = $table;
 
-        // Fetch data from the table
-        $stmt = $this->connection->query("SELECT * FROM $table");
+            // Check if table exists
+            $this->checkTableExists($table);
 
-        // Get Data
-        $this->populateData($stmt);
+            // Fetch data from the table
+            $stmt = $this->connection->query( "SELECT * FROM `$table`" );
+
+            // Get Data
+            $this->populateData($stmt);
+
+            return [
+                "success" => true
+            ];
+        }
+        catch (Exception $e) {
+            return [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+        }
     }
 
     function renderHtml() {
@@ -77,20 +119,29 @@ class Backend {
     }
 
     function renderJson() {
-        return json_encode($this->data->jsonSerialize());
+        return json_encode( $this->data->jsonSerialize() );
+    }
+
+    private function validateIdentifier($identifier)
+    {
+        if ( !preg_match('/^[a-zA-Z0-9_]+$/', $identifier) ) {
+            throw new Exception(
+                "Invalid database identifier"
+            );
+        }
+
+        return $identifier;
     }
 
     private function checkTableExists($table)
     {
-        $stmt = $this->connection->prepare(
-            "SHOW TABLES LIKE :table"
-        );
+        $stmt = $this->connection->prepare( "SHOW TABLES LIKE :table" );
 
         $stmt->bindParam(':table', $table);
         $stmt->execute();
 
-        if ($stmt->rowCount() === 0) {
-            throw new PDOException(
+        if ( $stmt->rowCount() === 0 ) {
+            throw new Exception(
                 "Table $table does not exist in the database"
             );
         }
@@ -100,7 +151,7 @@ class Backend {
     {
         $columnNames = [];
 
-        for ($i = 0; $i < $stmt->columnCount(); $i++) {
+        for ( $i = 0; $i < $stmt->columnCount(); $i++ ) {
             $meta = $stmt->getColumnMeta($i);
             $columnNames[] = $meta['name'];
         }
