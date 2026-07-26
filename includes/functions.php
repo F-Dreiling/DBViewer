@@ -100,10 +100,9 @@
         redirect();
     }
 
-    function fetchTableHtml(): string {
+    function fetchTableData(): ?array {
         $url = getBackendUrl("getall");
-
-        $url .= '?' . http_build_query( getConnectionParams() );
+        $url .= '?' . http_build_query(getConnectionParams());
 
         try {
             $response = file_get_contents($url);
@@ -118,62 +117,15 @@
                 throw new Exception($tableData['error']);
             }
 
-            $response = renderHtml($tableData);
+            setSuccess( "Fetched data from the database successfully" );
 
-            setSuccess("Fetched data from the database successfully");
-
-            return $response;
+            return $tableData;
         }
         catch (Exception $e) {
-            setError( $e->getMessage() );
-
+            setError($e->getMessage());
             clearConnection();
 
-            return "";
+            return null;
         }
-    }
-
-    function renderHtml(array $tableData): string {
-        $tableName = array_key_first($tableData);
-        $rows = $tableData[$tableName];
-
-        if (empty($rows)) {
-            return "<h3>Table: " . htmlentities($tableName) . "</h3><p>No data available.</p>";
-        }
-
-        $columnNames = array_keys($rows[0]);
-        $rowCount = count($rows);
-        $columnCount = count($columnNames);
-
-        $html = "<h3>Table: " . htmlentities($tableName) . "</h3>";
-        $html .= "<p>Row Count: {$rowCount}</p>";
-        $html .= "<p>Column Count: {$columnCount}</p>";
-
-        $html .= "<table class='table table-bordered'>";
-        $html .= "<thead><tr>";
-
-        foreach ($columnNames as $column) {
-            $html .= "<th>" . htmlentities($column) . "</th>";
-        }
-
-        $html .= "</tr></thead><tbody>";
-
-        $key = $columnNames[0];
-
-        foreach ($rows as $row) {
-            $id = json_encode($row[$key]);
-
-            $html .= "<tr onclick=\"clickRow('{$key}', {$id})\">";
-
-            foreach ($columnNames as $column) {
-                $html .= "<td>" . htmlentities((string) $row[$column]) . "</td>";
-            }
-
-            $html .= "</tr>";
-        }
-
-        $html .= "</tbody></table>";
-
-        return $html;
     }
 ?>
