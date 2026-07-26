@@ -20,8 +20,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>let sessionData = <?php echo json_encode($_SESSION); ?>;</script>
-    <script src="actions.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="/js/actions.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
     <title>DBViewer</title>
 </head>
 <body>
