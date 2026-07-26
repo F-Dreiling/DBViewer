@@ -1,43 +1,42 @@
 <?php ?>
 
-<p class="text-warning">Please enter the database and table name, username and optionally password.</p>
+<div class="dbv-card">
+    <p class="dbv-warning">Please enter the database and table name, username and optionally password.</p>
 
-<div class="w-75">
-    <form action="index.php" method="POST" class="d-flex flex-column gap-3">
-        <div class="row">
-            <div class="col-md-6">
+    <form action="index.php" method="POST" class="dbv-form">
+        <div class="dbv-grid">
+            <div class="dbv-field">
                 <label for="host">Host:</label>
-                <input type="text" name="host" id="host" class="form-control" value="localhost">
+                <input type="text" name="host" id="host" class="dbv-input" value="localhost">
             </div>
-            <div class="col-md-6">
+            <div class="dbv-field">
                 <label for="port">Port:</label>
-                <input type="text" name="port" id="port" class="form-control" value="3306">
+                <input type="text" name="port" id="port" class="dbv-input" value="3306">
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
+
+        <div class="dbv-grid">
+            <div class="dbv-field">
                 <label for="userName">User Name:</label>
-                <input type="text" name="userName" id="userName" class="form-control" placeholder="Enter your username">
+                <input type="text" name="userName" id="userName" class="dbv-input" placeholder="Enter your username">
             </div>
-            <div class="col-md-6">
+            <div class="dbv-field">
                 <label for="passWord">Password:</label>
-                <input type="text" name="passWord" id="passWord" class="form-control" placeholder="Enter your password">
+                <input type="text" name="passWord" id="passWord" class="dbv-input" placeholder="Enter your password">
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
+
+        <div class="dbv-grid">
+            <div class="dbv-field">
                 <label for="dbName">DB Name:</label>
-                <input type="text" name="dbName" id="dbName" class="form-control" placeholder="Enter the database">
+                <input type="text" name="dbName" id="dbName" class="dbv-input" placeholder="Enter the database">
             </div>
-            <div class="col-md-6">
+            <div class="dbv-field">
                 <label for="table">Table:</label>
-                <input type="text" name="table" id="table" class="form-control" placeholder="Enter the table">
+                <input type="text" name="table" id="table" class="dbv-input" placeholder="Enter the table">
             </div>
         </div>
-        <div class="row mt-3">
-            <div class="col">
-                <input type="submit" class="btn btn-secondary w-100" name="submit" value="Submit">
-            </div>
-        </div>
+
+        <input type="submit" class="dbv-button dbv-w-100" name="submit" value="Submit">
     </form>
 </div>

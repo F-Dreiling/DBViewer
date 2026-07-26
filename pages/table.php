@@ -4,7 +4,8 @@
     $rows = $tableData[$tableName];
 ?>
 
-<div class="w-100">
+<div class="dbv-card">
+
     <h3>Table: <?= htmlentities($tableName) ?></h3>
 
 <?php if (empty($rows)): ?>
@@ -20,29 +21,40 @@
         $key = $columnNames[0];
     ?>
 
-    <p>Row Count: <?= $rowCount ?></p>
-    <p>Column Count: <?= $columnCount ?></p>
+    <div class="dbv-meta">
+        <div class="dbv-meta-item">
+            <span class="dbv-meta-label">Rows</span>
+            <span class="dbv-meta-value"><?= $rowCount ?></span>
+        </div>
 
-    <table class="table table-bordered">
+        <div class="dbv-meta-item">
+            <span class="dbv-meta-label">Columns</span>
+            <span class="dbv-meta-value"><?= $columnCount ?></span>
+        </div>
+    </div>
+
+    <table class="dbv-table">
         <thead>
-        <tr>
-        <?php foreach ($columnNames as $column): ?>
-            <th><?= htmlentities($column) ?></th>
-        <?php endforeach; ?>
-        </tr>
+            <tr>
+
+            <?php foreach ($columnNames as $column): ?>
+                <th><?= htmlentities($column) ?></th>
+            <?php endforeach; ?>
+            
+            </tr>
         </thead>
+
         <tbody>
         <?php foreach ($rows as $row): ?>
+            <tr onclick="clickRow('<?= htmlentities($key) ?>', <?= json_encode($row[$key]) ?>)">
 
-        <tr onclick="clickRow('<?= htmlentities($key) ?>', <?= json_encode($row[$key]) ?>)">
+            <?php foreach ($columnNames as $column): ?>
+                <td><?= htmlentities((string)$row[$column]) ?></td>
+            <?php endforeach; ?>
 
-        <?php foreach ($columnNames as $column): ?>
-            <td><?= htmlentities( (string)$row[$column] ) ?></td>
+            </tr>
         <?php endforeach; ?>
 
-        </tr>
-
-        <?php endforeach; ?>
         </tbody>
     </table>
 
@@ -50,16 +62,21 @@
 
 </div>
 
-<div class="d-flex justify-content-between align-items-center gap-2 w-100">
-    <form action="index.php" method="POST">
-        <button type="submit" name="reset" class="btn btn-secondary">&lt;&lt; Reset</button>
-    </form>
+<div class="dbv-toolbar">
+    <div class="dbv-toolbar-left">
+        <form action="index.php" method="POST">
+            <button type="submit" name="reset" class="dbv-button">&lt;&lt; Reset</button>
+        </form>
+    </div>
 
-    <form action="index.php" method="POST">
-        <label for="table">Table:</label>
-        <input type="text" name="table" id="table" value="<?= htmlentities($_SESSION['table']); ?>" style="width: 33%">
-        <input type="submit" class="btn btn-secondary" name="refresh" value="Refresh">
-    </form>
+    <div class="dbv-toolbar-right">
+        <form action="index.php" method="POST">
+            <label for="table">Table:</label>
+            <input type="text" name="table" id="table" class="dbv-input" value="<?= htmlentities($_SESSION['table']); ?>">
+            <input type="submit" name="refresh" class="dbv-button" value="Refresh">
+        </form>
 
-    <input onclick='printJson()' type='button' class='btn btn-secondary' value='Print JSON'>
+        <input onclick="printJson()" type="button" class="dbv-button" value="Print JSON">
+    </div>
+
 </div>
