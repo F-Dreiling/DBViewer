@@ -2,13 +2,6 @@
     /** @var array $tableData */
     $tableName = array_key_first($tableData);
     $rows = $tableData[$tableName];
-
-    if ( !empty($rows) ) {
-        $columnNames = array_keys($rows[0]);
-        $rowCount = count($rows);
-        $columnCount = count($columnNames);
-        $key = $columnNames[0];
-    }
 ?>
 
 <div class="w-100">
@@ -19,6 +12,13 @@
     <p>No data available.</p>
 
 <?php else: ?>
+
+    <?php
+        $columnNames = array_keys($rows[0]);
+        $rowCount = count($rows);
+        $columnCount = count($columnNames);
+        $key = $columnNames[0];
+    ?>
 
     <p>Row Count: <?= $rowCount ?></p>
     <p>Column Count: <?= $columnCount ?></p>
