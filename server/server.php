@@ -11,8 +11,8 @@ routeRequest( $requestMethod, $requestUri, $backend );
 
 function routeRequest(string $method, string $uri, Backend $backend): void
 {
-    if ( $method === 'POST' && $uri === '/dbviewer/server/server.php/getone' ) {
-        handleGetOne($backend);
+    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/gettables' ) {
+        handleGetTables($backend);
         return;
     }
 
@@ -21,12 +21,66 @@ function routeRequest(string $method, string $uri, Backend $backend): void
         return;
     }
 
-    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/gethtml' ) {
-        handleGetHtml($backend);
+    if ( $method === 'POST' && $uri === '/dbviewer/server/server.php/getone' ) {
+        handleGetOne($backend);
         return;
     }
 
     sendText( "Invalid Request on {$uri}", 400 );
+}
+
+function handleGetTables(Backend $backend): void
+{
+    if ( empty($_GET['db']) || empty($_GET['user']) ) {
+        sendJson( json_encode([
+            "error" => "Invalid Data received"
+        ]), 400 );
+    }
+
+    $host = $_GET['host'] ?? 'localhost';
+    $port = $_GET['port'] ?? '3306';
+    $db = $_GET['db'];
+    $user = $_GET['user'];
+    $pass = $_GET['pass'] ?? '';
+
+    $result = $backend->connect($host, $port, $db, $user, $pass);
+
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 500 );
+    }
+
+    sendJson( json_encode($backend->getTables()) );
+}
+
+function handleGetAll(Backend $backend): void
+{
+    if ( empty($_GET['db']) || empty($_GET['user']) ) {
+        sendJson( json_encode([
+            "error" => "Invalid Data received"
+        ]), 400 );
+    }
+
+    $host  = $_GET['host'] ?? 'localhost';
+    $port  = $_GET['port'] ?? '3306';
+    $db    = $_GET['db'];
+    $user  = $_GET['user'];
+    $pass  = $_GET['pass'] ?? '';
+    
+    $result = $backend->connect($host, $port, $db, $user, $pass);
+
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 500 );
+    }
+
+    $table = $_GET['table'] ?? $backend->getFirstTable();
+
+    $result = $backend->fetchAll($table);
+
+    if ( !$result["success"] ) {
+        sendJson( json_encode($result), 400 );
+    }
+
+    sendJson( $backend->renderJson() );
 }
 
 function handleGetOne(Backend $backend): void
@@ -47,7 +101,6 @@ function handleGetOne(Backend $backend): void
     $pass  = $params['pass'] ?? '';
     $key   = $params['key'] ?? 'id';
     $id    = $params['id'];
-
     
     $result = $backend->connect($host, $port, $db, $user, $pass);
 
@@ -64,82 +117,12 @@ function handleGetOne(Backend $backend): void
     sendJson( $backend->renderJson() );
 }
 
-function handleGetAll(Backend $backend): void
-{
-    if ( empty($_GET['db']) || empty($_GET['table']) || empty($_GET['user']) ) {
-        sendJson( json_encode([
-            "error" => "Invalid Data received"
-        ]), 400 );
-    }
-
-    $host  = $_GET['host'] ?? 'localhost';
-    $port  = $_GET['port'] ?? '3306';
-    $db    = $_GET['db'];
-    $table = $_GET['table'];
-    $user  = $_GET['user'];
-    $pass  = $_GET['pass'] ?? '';
-
-    
-    $result = $backend->connect($host, $port, $db, $user, $pass);
-
-    if ( !$result["success"] ) {
-        sendJson( json_encode($result), 500 );
-    }
-
-    $result = $backend->fetchAll($table);
-
-    if ( !$result["success"] ) {
-        sendJson( json_encode($result), 400 );
-    }
-
-    sendJson( $backend->renderJson() );
-}
-
-function handleGetHtml(Backend $backend): void
-{
-    if ( empty($_GET['db']) || empty($_GET['table']) || empty($_GET['user']) ) {
-        sendJson( json_encode([
-            "error" => "Invalid Data received"
-        ]), 400);
-    }
-
-    $host  = $_GET['host'] ?? 'localhost';
-    $port  = $_GET['port'] ?? '3306';
-    $db    = $_GET['db'];
-    $table = $_GET['table'];
-    $user  = $_GET['user'];
-    $pass  = $_GET['pass'] ?? '';
-
-    $result = $backend->connect($host, $port, $db, $user, $pass);
-
-    if ( !$result["success"] ) {
-        sendHtml( "error: " . $result["error"], 500 );
-    }
-
-    $result = $backend->fetchAll($table);
-    
-    if ( !$result["success"] ) {
-        sendHtml( "error: " . $result["error"], 400 );
-    }
-
-    sendHtml( $backend->renderHtml() );
-}
-
 function sendJson(string $json, int $status = 200): void
 {
     http_response_code($status);
     header('Content-Type: application/json');
 
     echo $json;
-    exit;
-}
-
-function sendHtml(string $html, int $status = 200): void
-{
-    http_response_code($status);
-    header('Content-Type: text/html');
-
-    echo $html;
     exit;
 }
 

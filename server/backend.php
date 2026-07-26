@@ -5,14 +5,21 @@ require_once 'data.php';
 class Backend {
     private $connection;
     private $data;
+    private $tables = [];
 
-    function connect($host, $port, $dbName, $user, $pass) {
+    function connect($host, $port, $dbName, $user, $pass): array {
         try {
             // Create connection
             $this->connection = new PDO( "mysql:host=$host;port=$port;dbname=$dbName", $user, $pass );
             $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
             $this->data = new Data();
+
+            $result = $this->fetchTables();
+
+            if ( !$result["success"] ) {
+                return $result;
+            }
 
             return [
                 "success" => true
@@ -26,7 +33,35 @@ class Backend {
         }
     }
 
-    function fetchOne($table, $key, $id) {
+    function fetchAll($table): array {
+        try {
+            // Validate table names
+            $table = $this->validateIdentifier($table);
+
+            $this->data->tableName = $table;
+
+            // Check if table exists
+            $this->checkTableExists($table);
+
+            // Fetch data from the table
+            $stmt = $this->connection->query( "SELECT * FROM `$table`" );
+
+            // Get Data
+            $this->populateData($stmt);
+
+            return [
+                "success" => true
+            ];
+        }
+        catch (Exception $e) {
+            return [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+        }
+    }
+
+    function fetchOne($table, $key, $id): array {
         try {
             // Validate table names
             $table = $this->validateIdentifier($table);
@@ -59,21 +94,11 @@ class Backend {
         }
     }
 
-    function fetchAll($table) {
+    function fetchTables(): array {
         try {
-            // Validate table names
-            $table = $this->validateIdentifier($table);
-
-            $this->data->tableName = $table;
-
-            // Check if table exists
-            $this->checkTableExists($table);
-
-            // Fetch data from the table
-            $stmt = $this->connection->query( "SELECT * FROM `$table`" );
-
-            // Get Data
-            $this->populateData($stmt);
+            // Fetch all table names
+            $stmt = $this->connection->query( "SHOW TABLES" );
+            $this->tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             return [
                 "success" => true
@@ -87,43 +112,19 @@ class Backend {
         }
     }
 
-    function renderHtml() {
-        $result = "<h3>Table: ".$this->data->tableName."</h3>";
-        $result .= "<p>Row Count: ".$this->data->rowCount."</p>";
-        $result .= "<p>Column Count: ".$this->data->columnCount."</p>";
-
-        $result .= "<table class='table table-bordered'>";
-        $result .= "<thead><tr>";
-        
-        foreach ($this->data->columnNames as $column) {
-            $result .= "<th>".htmlentities($column)."</th>";
-        }
-
-        $result .= "</tr></thead><tbody>";
-        
-        $key = $this->data->columnNames[0];
-
-        foreach ($this->data->tableData as $row) {
-            $result .= "<tr onclick=\"clickRow('".$key."', ".$row[$key].")\">";
-
-            foreach ($row as $cell) {
-                $result .= "<td>".htmlentities($cell)."</td>";
-            }
-
-            $result .= "</tr>";
-        }
-
-        $result .= "</tbody></table>";
-
-        return $result;
+    function getTables(): array {
+        return $this->tables;
     }
 
-    function renderJson() {
+    function getFirstTable(): string {
+        return $this->tables[0] ?? '';
+    }
+
+    function renderJson(): string {
         return json_encode( $this->data->jsonSerialize() );
     }
 
-    private function validateIdentifier($identifier)
-    {
+    private function validateIdentifier($identifier): string {
         if ( !preg_match('/^[a-zA-Z0-9_]+$/', $identifier) ) {
             throw new Exception(
                 "Invalid database identifier"
@@ -133,8 +134,7 @@ class Backend {
         return $identifier;
     }
 
-    private function checkTableExists($table)
-    {
+    private function checkTableExists($table): void {
         $stmt = $this->connection->prepare( "SHOW TABLES LIKE :table" );
 
         $stmt->bindParam(':table', $table);
@@ -147,27 +147,8 @@ class Backend {
         }
     }
 
-    private function getColumnNames(PDOStatement $stmt)
-    {
-        $columnNames = [];
-
-        for ( $i = 0; $i < $stmt->columnCount(); $i++ ) {
-            $meta = $stmt->getColumnMeta($i);
-            $columnNames[] = $meta['name'];
-        }
-
-        return $columnNames;
-    }
-
-    private function populateData(PDOStatement $stmt)
-    {
-        $tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $this->data->columnCount = $stmt->columnCount();
-        $this->data->columnNames = $this->getColumnNames($stmt);
-
-        $this->data->tableData = $tableData;
-        $this->data->rowCount = count($tableData);
+    private function populateData(PDOStatement $stmt): void {
+        $this->data->tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 

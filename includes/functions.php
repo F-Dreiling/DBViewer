@@ -101,20 +101,24 @@
     }
 
     function fetchTableHtml(): string {
-        $url = getBackendUrl("gethtml");
+        $url = getBackendUrl("getall");
 
         $url .= '?' . http_build_query( getConnectionParams() );
 
         try {
             $response = file_get_contents($url);
 
-            if ( $response === false || $response === "" ) {
-                throw new Exception("Error fetching data from the server");
+            $tableData = json_decode($response, true);
+
+            if ( $tableData === null ) {
+                throw new Exception("Invalid JSON received from server");
             }
 
-            if ( substr($response, 0, 5) === "Error" ) {
-                throw new Exception($response);
+            if ( isset($tableData['error']) ) {
+                throw new Exception($tableData['error']);
             }
+
+            $response = renderHtml($tableData);
 
             setSuccess("Fetched data from the database successfully");
 
@@ -127,5 +131,49 @@
 
             return "";
         }
+    }
+
+    function renderHtml(array $tableData): string {
+        $tableName = array_key_first($tableData);
+        $rows = $tableData[$tableName];
+
+        if (empty($rows)) {
+            return "<h3>Table: " . htmlentities($tableName) . "</h3><p>No data available.</p>";
+        }
+
+        $columnNames = array_keys($rows[0]);
+        $rowCount = count($rows);
+        $columnCount = count($columnNames);
+
+        $html = "<h3>Table: " . htmlentities($tableName) . "</h3>";
+        $html .= "<p>Row Count: {$rowCount}</p>";
+        $html .= "<p>Column Count: {$columnCount}</p>";
+
+        $html .= "<table class='table table-bordered'>";
+        $html .= "<thead><tr>";
+
+        foreach ($columnNames as $column) {
+            $html .= "<th>" . htmlentities($column) . "</th>";
+        }
+
+        $html .= "</tr></thead><tbody>";
+
+        $key = $columnNames[0];
+
+        foreach ($rows as $row) {
+            $id = json_encode($row[$key]);
+
+            $html .= "<tr onclick=\"clickRow('{$key}', {$id})\">";
+
+            foreach ($columnNames as $column) {
+                $html .= "<td>" . htmlentities((string) $row[$column]) . "</td>";
+            }
+
+            $html .= "</tr>";
+        }
+
+        $html .= "</tbody></table>";
+
+        return $html;
     }
 ?>
