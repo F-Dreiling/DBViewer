@@ -19,9 +19,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>let sessionData = <?php echo json_encode($_SESSION); ?>;</script>
-    <script><?php include __DIR__ . '/js/actions.php'; ?></script>
-    <style><?php include __DIR__ . '/css/styles.php'; ?></style>
+    <style>
+        <?php readfile(__DIR__ . '/css/styles.css'); ?>
+    </style>
+    <script>
+        let sessionData = <?= json_encode($_SESSION) ?>;
+        <?php readfile(__DIR__ . '/js/actions.js'); ?>
+    </script>
     <title>DBViewer</title>
 </head>
 <body>
