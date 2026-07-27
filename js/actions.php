@@ -1,3 +1,5 @@
+<?php ?>
+
 let host = sessionData.host;
 let port = sessionData.port;
 let db = sessionData.dbName;

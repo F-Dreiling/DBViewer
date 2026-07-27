@@ -1,12 +1,6 @@
 <?php
     session_start();
 
-    $basePath = rtrim( dirname($_SERVER['SCRIPT_NAME']), '/\\' );
-
-    if ( $basePath === '/' ) {
-        $basePath = '';
-    }
-
     require_once 'includes/functions.php';
 
     handleSubmit();
@@ -26,8 +20,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>let sessionData = <?php echo json_encode($_SESSION); ?>;</script>
-    <script src="<?= $basePath ?>/js/actions.js"></script>
-    <link rel="stylesheet" href="<?= $basePath ?>/css/styles.css">
+    <script><?php include __DIR__ . '/js/actions.php'; ?></script>
+    <style><?php include __DIR__ . '/css/styles.php'; ?></style>
     <title>DBViewer</title>
 </head>
 <body>
