@@ -5,6 +5,19 @@ let table = sessionData.table;
 let user = sessionData.userName;
 let pass = sessionData.passWord;
 
+function toggleSsl() {
+    const toggle = document.getElementById("sslToggle");
+    const container = document.getElementById("sslContainer");
+
+    if (!toggle || !container) {
+        return;
+    }
+
+    container.classList.toggle( "dbv-hidden", !toggle.checked );
+}
+
+document.addEventListener("DOMContentLoaded", toggleSsl);
+
 async function clickRow(key, id) {    
     const bodyData = `key=${key}&id=${id}&host=${host}&port=${port}&db=${db}&table=${table}&user=${user}&pass=${pass}`;
 

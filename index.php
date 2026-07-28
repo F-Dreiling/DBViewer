@@ -5,6 +5,7 @@
 
     handleSubmit();
     handleRefresh();
+    handleBack();
     handleReset();
 
     $tableData = null;
@@ -24,6 +25,7 @@
     </style>
     <script>
         let sessionData = <?= json_encode($_SESSION) ?>;
+        let tableData = <?= json_encode($tableData) ?>;
         <?php readfile(__DIR__ . '/js/actions.js'); ?>
     </script>
     <title>DBViewer</title>

@@ -42,8 +42,9 @@ function handleGetTables(Backend $backend): void
     $db = $_GET['db'];
     $user = $_GET['user'];
     $pass = $_GET['pass'] ?? '';
+    $cert = $_GET['cert'] ?? '';
 
-    $result = $backend->connect($host, $port, $db, $user, $pass);
+    $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
 
     if ( !$result["success"] ) {
         sendJson( json_encode($result), 500 );
@@ -65,8 +66,9 @@ function handleGetAll(Backend $backend): void
     $db    = $_GET['db'];
     $user  = $_GET['user'];
     $pass  = $_GET['pass'] ?? '';
+    $cert = $_GET['cert'] ?? '';
     
-    $result = $backend->connect($host, $port, $db, $user, $pass);
+    $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
 
     if ( !$result["success"] ) {
         sendJson( json_encode($result), 500 );
@@ -101,8 +103,9 @@ function handleGetOne(Backend $backend): void
     $pass  = $params['pass'] ?? '';
     $key   = $params['key'] ?? 'id';
     $id    = $params['id'];
+    $cert   = $params['cert'] ?? '';
     
-    $result = $backend->connect($host, $port, $db, $user, $pass);
+    $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
 
     if ( !$result["success"] ) {
         sendJson( json_encode($result), 500 );

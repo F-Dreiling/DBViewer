@@ -7,11 +7,22 @@ class Backend {
     private $data;
     private $tables = [];
 
-    function connect($host, $port, $dbName, $user, $pass): array {
+    function connect($host, $port, $dbName, $user, $pass, $cert = ''): array {
         try {
-            // Create connection
-            $this->connection = new PDO( "mysql:host=$host;port=$port;dbname=$dbName", $user, $pass );
-            $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+            // Create connection string
+            $connectionString = "mysql:host=$host;port=$port;dbname=$dbName";
+            
+            // Enable SSL if a certificate is provided
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ];
+
+            if ( !empty($cert) ) {
+                $options[PDO::MYSQL_ATTR_SSL_CA] = __DIR__ . "/../certs/" . basename($cert);
+            }
+
+            // Create PDO connection
+            $this->connection = new PDO( $connectionString, $user, $pass, $options );
 
             $this->data = new Data();
 

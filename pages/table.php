@@ -66,6 +66,7 @@
     <div class="dbv-toolbar-left">
         <form action="index.php" method="POST">
             <button type="submit" name="reset" class="dbv-button">&lt;&lt; Reset</button>
+            <button type="submit" name="back" class="dbv-button">&lt;&lt; Back</button>
         </form>
     </div>
 

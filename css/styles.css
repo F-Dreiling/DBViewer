@@ -137,6 +137,11 @@ h6 {
     flex-wrap: wrap;
 }
 
+.dbv-spacer {
+    border: none;
+    border-top: 1px dotted var(--dbv-border);
+}
+
 
 /* ==========================================================
    Cards
@@ -272,6 +277,56 @@ h6 {
 
 .dbv-button:active {
     transform: translateY(0);
+}
+
+.dbv-toggle {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.dbv-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+
+.dbv-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.dbv-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--dbv-surface);
+    border: 1px solid var(--dbv-border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background var(--dbv-transition);
+}
+
+.dbv-slider::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    width: 18px;
+    height: 18px;
+    background: var(--dbv-text);
+    border-radius: 50%;
+    transition: transform var(--dbv-transition);
+}
+
+.dbv-switch input:checked + .dbv-slider {
+    background: var(--dbv-accent-dark);
+    border-color: var(--dbv-accent);
+}
+
+.dbv-switch input:checked + .dbv-slider::before {
+    transform: translateX(22px);
 }
 
 

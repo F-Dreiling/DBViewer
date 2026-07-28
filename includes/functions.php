@@ -12,6 +12,7 @@
             $_SESSION['table'],
             $_SESSION['userName'],
             $_SESSION['passWord'],
+            $_SESSION['cert'],
             $_SESSION['load']
         );
     }
@@ -43,8 +44,27 @@
             'db'    => $_SESSION['dbName'],
             'table' => $_SESSION['table'],
             'user'  => $_SESSION['userName'],
-            'pass'  => $_SESSION['passWord']
+            'pass'  => $_SESSION['passWord'],
+            'cert'   => $_SESSION['cert']
         ];
+    }
+
+    function getCertificates(): array {
+        $directory = __DIR__ . '/../certs';
+
+        if ( !is_dir($directory) ) {
+            return [];
+        }
+
+        $files = array_filter( scandir($directory), function ($file) use ($directory) {
+            return is_file($directory . '/' . $file);
+        } );
+
+        return array_values(array_filter( $files, fn($file) =>
+            str_ends_with($file, ".pem") ||
+            str_ends_with($file, ".crt") ||
+            str_ends_with($file, ".cer")
+        ) );
     }
 
     function handleSubmit(): void {
@@ -62,6 +82,7 @@
             $_SESSION['table'] = $_POST['table'];
             $_SESSION['userName'] = $_POST['userName'];
             $_SESSION['passWord'] = $_POST['passWord'] ?? "";
+            $_SESSION['cert'] = $_POST['cert'] ?? "";
             $_SESSION['load'] = true;
         }
         else {
@@ -85,6 +106,16 @@
             setError( "Missing table name" );
             clearConnection();
         }
+
+        redirect();
+    }
+
+    function handleBack(): void {
+        if ( !isset($_POST['back']) ) {
+            return;
+        }
+
+        unset($_SESSION['load']);
 
         redirect();
     }
