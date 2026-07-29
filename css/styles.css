@@ -353,6 +353,57 @@ h6 {
 
 
 /* ==========================================================
+   Popups
+========================================================== */
+
+.dbv-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.dbv-popup-content {
+    width: min(600px, 60vw);
+    max-height: 60vh;
+
+    background: var(--dbv-surface-light);
+    border: 1px solid var(--dbv-border);
+    border-radius: var(--dbv-radius);
+
+    padding: 1rem;
+    position: relative;
+}
+
+.dbv-popup-content textarea {
+    width: 100%;
+    height: 300px;
+
+    resize: none;
+
+    background: var(--dbv-surface);
+    color: var(--dbv-text);
+
+    border: 1px solid var(--dbv-border);
+
+    font-family: inherit;
+}
+
+.dbv-popup-close {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+
+    cursor: pointer;
+}
+
+
+/* ==========================================================
    Status
 ========================================================== */
 

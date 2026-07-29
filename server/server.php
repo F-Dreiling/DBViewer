@@ -11,12 +11,7 @@ routeRequest( $requestMethod, $requestUri, $backend );
 
 function routeRequest(string $method, string $uri, Backend $backend): void
 {
-    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/gettables' ) {
-        handleGetTables($backend);
-        return;
-    }
-
-    if ( $method === 'GET' && $uri === '/dbviewer/server/server.php/getall' ) {
+    if ( $method === 'POST' && $uri === '/dbviewer/server/server.php/getall' ) {
         handleGetAll($backend);
         return;
     }
@@ -29,44 +24,28 @@ function routeRequest(string $method, string $uri, Backend $backend): void
     sendText( "Invalid Request on {$uri}", 400 );
 }
 
-function handleGetTables(Backend $backend): void
-{
-    if ( empty($_GET['db']) || empty($_GET['user']) ) {
-        sendJson( json_encode([
-            "error" => "Invalid Data received"
-        ]), 400 );
-    }
-
-    $host = $_GET['host'] ?? 'localhost';
-    $port = $_GET['port'] ?? '3306';
-    $db = $_GET['db'];
-    $user = $_GET['user'];
-    $pass = $_GET['pass'] ?? '';
-    $cert = $_GET['cert'] ?? '';
-
-    $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
-
-    if ( !$result["success"] ) {
-        sendJson( json_encode($result), 500 );
-    }
-
-    sendJson( json_encode($backend->getTables()) );
-}
-
 function handleGetAll(Backend $backend): void
 {
-    if ( empty($_GET['db']) || empty($_GET['user']) ) {
+    $params = json_decode(file_get_contents('php://input'), true);
+
+    if ( !is_array($params) ) {
+        sendJson( json_encode([
+            "error" => "Invalid JSON received"
+        ]), 400 );
+    }
+
+    if ( empty($params['db']) || empty($params['user']) ) {
         sendJson( json_encode([
             "error" => "Invalid Data received"
         ]), 400 );
     }
 
-    $host  = $_GET['host'] ?? 'localhost';
-    $port  = $_GET['port'] ?? '3306';
-    $db    = $_GET['db'];
-    $user  = $_GET['user'];
-    $pass  = $_GET['pass'] ?? '';
-    $cert = $_GET['cert'] ?? '';
+    $host  = $params['host'] ?? 'localhost';
+    $port  = $params['port'] ?? '3306';
+    $db    = $params['db'];
+    $user  = $params['user'];
+    $pass  = $params['pass'] ?? '';
+    $cert  = $params['cert'] ?? '';
     
     $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
 
@@ -74,7 +53,7 @@ function handleGetAll(Backend $backend): void
         sendJson( json_encode($result), 500 );
     }
 
-    $table = $_GET['table'] ?? $backend->getFirstTable();
+    $table = !empty($params['table']) ? $params['table'] : $backend->getFirstTable();
 
     $result = $backend->fetchAll($table);
 
@@ -87,7 +66,13 @@ function handleGetAll(Backend $backend): void
 
 function handleGetOne(Backend $backend): void
 {
-    parse_str( file_get_contents('php://input'), $params );
+    $params = json_decode(file_get_contents('php://input'), true);
+
+    if ( !is_array($params) ) {
+        sendJson( json_encode([
+            "error" => "Invalid JSON received"
+        ]), 400 );
+    }
 
     if ( empty($params['id']) || !is_numeric($params['id']) || empty($params['db']) || empty($params['table']) || empty($params['user']) ) {
         sendJson( json_encode([
@@ -103,7 +88,7 @@ function handleGetOne(Backend $backend): void
     $pass  = $params['pass'] ?? '';
     $key   = $params['key'] ?? 'id';
     $id    = $params['id'];
-    $cert   = $params['cert'] ?? '';
+    $cert  = $params['cert'] ?? '';
     
     $result = $backend->connect($host, $port, $db, $user, $pass, $cert);
 

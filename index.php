@@ -8,10 +8,20 @@
     handleBack();
     handleReset();
 
+    $tables = null;
     $tableData = null;
+    $tableName = '';
+    $rows = [];
 
     if ( isset($_SESSION['load']) ) {
-        $tableData = fetchTableData();
+        $tablesAndData = fetchTableData();
+
+        if ( $tablesAndData !== null ) {
+            $tables = $tablesAndData['tables'];
+            $tableData = $tablesAndData['data'];
+            $tableName = array_key_first($tableData);
+            $rows = $tableData[$tableName];
+        }
     }
 ?>
 
@@ -25,7 +35,7 @@
     </style>
     <script>
         let sessionData = <?= json_encode($_SESSION) ?>;
-        let tableData = <?= json_encode($tableData) ?>;
+        let rows = <?= json_encode($rows ?? []) ?>;
         <?php readfile(__DIR__ . '/js/actions.js'); ?>
     </script>
     <title>DBViewer</title>

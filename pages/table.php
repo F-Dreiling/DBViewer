@@ -1,7 +1,7 @@
 <?php 
-    /** @var array $tableData */
-    $tableName = array_key_first($tableData);
-    $rows = $tableData[$tableName];
+    /** @var array $tables */
+    /** @var string $tableName */
+    /** @var array $rows */    
 ?>
 
 <div class="dbv-card">
@@ -75,7 +75,18 @@
     <div class="dbv-toolbar-right">
         <form action="index.php" method="POST">
             <label for="table">Table:</label>
-            <input type="text" name="table" id="table" class="dbv-input" value="<?= htmlentities($_SESSION['table']); ?>">
+            <select name="table" id="table" class="dbv-select">
+
+            <?php foreach ($tables as $table): ?>
+
+                <option value="<?= htmlentities($table) ?>"
+                    <?= $_SESSION['table'] === $table ? 'selected' : '' ?>>
+                    <?= htmlentities($table) ?>
+                </option>
+
+            <?php endforeach; ?>
+
+            </select>
             <input type="submit" name="refresh" class="dbv-button" value="Refresh">
         </form>
 

@@ -132,7 +132,10 @@ class Backend {
     }
 
     function renderJson(): string {
-        return json_encode( $this->data->jsonSerialize() );
+        return json_encode([
+            "tables" => $this->tables,
+            "data" => $this->data->jsonSerialize()
+        ]);
     }
 
     private function validateIdentifier($identifier): string {

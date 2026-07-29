@@ -45,7 +45,7 @@
             'table' => $_SESSION['table'],
             'user'  => $_SESSION['userName'],
             'pass'  => $_SESSION['passWord'],
-            'cert'   => $_SESSION['cert']
+            'cert'  => $_SESSION['cert']
         ];
     }
 
@@ -73,13 +73,12 @@
         }
 
         if ( !empty( trim($_POST['host']) ) && !empty( trim($_POST['port']) ) 
-                && !empty( trim($_POST['dbName']) ) && !empty( trim($_POST['table']) ) 
-                && !empty( trim($_POST['userName']) ) ) {
+                && !empty( trim($_POST['dbName']) ) && !empty( trim($_POST['userName']) ) ) {
 
             $_SESSION['host'] = $_POST['host'];
             $_SESSION['port'] = $_POST['port'];
             $_SESSION['dbName'] = $_POST['dbName'];
-            $_SESSION['table'] = $_POST['table'];
+            $_SESSION['table'] = $_POST['table'] ?? "";
             $_SESSION['userName'] = $_POST['userName'];
             $_SESSION['passWord'] = $_POST['passWord'] ?? "";
             $_SESSION['cert'] = $_POST['cert'] ?? "";
@@ -133,10 +132,24 @@
 
     function fetchTableData(): ?array {
         $url = getBackendUrl("getall");
-        $url .= '?' . http_build_query(getConnectionParams());
+
+        $options = [
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\n",
+                'content' => json_encode(getConnectionParams()),
+                'ignore_errors' => true
+            ]
+        ];
+
+        $context = stream_context_create($options);
 
         try {
-            $response = file_get_contents($url);
+            $response = file_get_contents($url, false, $context);
+
+            if ($response === false) {
+                throw new Exception("Unable to contact backend");
+            }
 
             $tableData = json_decode($response, true);
 
@@ -148,6 +161,10 @@
                 throw new Exception($tableData['error']);
             }
 
+            if ( empty($_SESSION['table']) && !empty($tableData['data']) ) {
+                $_SESSION['table'] = array_key_first($tableData['data']);
+            }
+            
             setSuccess( "Fetched data from the database successfully" );
 
             return $tableData;
