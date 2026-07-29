@@ -39,7 +39,7 @@ class Backend {
         catch (PDOException $e) {
             return [
                 "success" => false,
-                "error" => "Database connection failed"
+                "error" => $e->getMessage()
             ];
         }
     }

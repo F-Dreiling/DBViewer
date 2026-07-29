@@ -147,14 +147,18 @@
         try {
             $response = file_get_contents($url, false, $context);
 
-            if ($response === false) {
+            $status = $http_response_header[0] ?? 'Unknown';
+
+            if ( $response === false ) {
                 throw new Exception("Unable to contact backend");
             }
 
             $tableData = json_decode($response, true);
 
             if ( $tableData === null ) {
-                throw new Exception("Invalid JSON received from server");
+                throw new Exception(
+                    "Invalid JSON received from server:\n\n" . $response . "\n\nStatus: " . $status
+                );
             }
 
             if ( isset($tableData['error']) ) {
