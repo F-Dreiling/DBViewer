@@ -1,10 +1,3 @@
-let host = sessionData.host;
-let port = sessionData.port;
-let db = sessionData.dbName;
-let table = sessionData.table;
-let user = sessionData.userName;
-let pass = sessionData.passWord;
-let cert = sessionData.cert;
 
 function toggleSsl() {
     const toggle = document.getElementById("sslToggle");
@@ -65,43 +58,20 @@ function showRowPopup(row) {
     document.body.appendChild(popup);
 }
 
-async function printJson() {
-    const bodyData = {
-        host,
-        port,
-        db,
-        table,
-        user,
-        pass,
-        cert
-    };
-
-    try {
-        // URL to Backend
-        const url = `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '')}/server/server.php/getall`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(bodyData)
-        });
-
-        const jsonData = await response.json();
-
-        if (!jsonData || Object.keys(jsonData).length === 0) {
-            console.error('Error: No data received from server');
-        } 
-        else if (jsonData.error) {
-            console.error(jsonData.error);
-        } 
-        else {
-            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            window.open(url);
-        }
-    } 
-    catch (error) {
-        console.error('Error: ', error);
+function printJson() {
+    if (!tableData || Object.keys(tableData).length === 0) {
+        console.error("No JSON data available");
+        return;
     }
+
+    const blob = new Blob(
+        [JSON.stringify(tableData, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    window.open(url);
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

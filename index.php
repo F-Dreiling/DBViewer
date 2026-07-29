@@ -34,7 +34,7 @@
         <?php readfile(__DIR__ . '/css/styles.css'); ?>
     </style>
     <script>
-        let sessionData = <?= json_encode($_SESSION) ?>;
+        let tableData = <?= json_encode($tableData ?? []) ?>;
         let rows = <?= json_encode($rows ?? []) ?>;
         <?php readfile(__DIR__ . '/js/actions.js'); ?>
     </script>
