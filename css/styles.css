@@ -191,6 +191,15 @@ h6 {
    Table
 ========================================================== */
 
+.dbv-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--dbv-radius);
+}
+
+.dbv-table-wrapper::-webkit-scrollbar {
+    height: 10px;
+}
+
 .dbv-table {
     width: 100%;
     border-collapse: collapse;
@@ -213,6 +222,7 @@ h6 {
 .dbv-table td {
     padding: .8rem 1rem;
     border-bottom: 1px solid var(--dbv-border);
+    overflow-wrap: break-word;
 }
 
 .dbv-table tbody tr {
@@ -235,6 +245,7 @@ h6 {
 
 .dbv-input,
 .dbv-select {
+    height: 40px;
     padding: .65rem .85rem;
     background: var(--dbv-surface);
     color: var(--dbv-text);
@@ -256,6 +267,7 @@ h6 {
 ========================================================== */
 
 .dbv-button {
+    height: 40px;
     padding: .65rem 1rem;
     background: var(--dbv-surface);
     color: var(--dbv-heading);
@@ -279,7 +291,17 @@ h6 {
     transform: translateY(0);
 }
 
+.dbv-button-secondary {
+    border-color: var(--dbv-border);
+    color: var(--dbv-text-muted);
+}
+
+.dbv-button-secondary:hover {
+    border-color: var(--dbv-text-muted);
+}
+
 .dbv-toggle {
+    height: 40px;
     display: flex;
     align-items: center;
     gap: .75rem;
@@ -411,11 +433,6 @@ h6 {
     .dbv-toolbar {
         flex-direction: column;
         align-items: stretch;
-    }
-
-    .dbv-meta {
-        flex-direction: column;
-        gap: 1rem;
     }
 
 }

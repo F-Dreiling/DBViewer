@@ -50,7 +50,7 @@
                 <span>Use SSL Certificate</span>
             </div>
 
-            <div id="sslContainer" class="<?= $sslEnabled ? '' : 'dbv-hidden' ?>">
+            <div id="sslContainer" class="dbv-field <?= $sslEnabled ? '' : 'dbv-hidden' ?>">
                 <label for="cert">Certificate:</label>
 
                 <select name="cert" id="cert" class="dbv-select">
@@ -70,6 +70,9 @@
 
         <div class="dbv-spacer"></div>
 
-        <input type="submit" class="dbv-button dbv-w-100" name="submit" value="Submit">
+        <div class="dbv-grid">
+            <input type="submit" class="dbv-button dbv-button-secondary" name="reset" value="Reset">
+            <input type="submit" class="dbv-button" name="submit" value="Submit">
+        </div>
     </form>
 </div>
