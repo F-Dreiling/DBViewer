@@ -1,4 +1,6 @@
 <?php
+    require_once 'server/backend.php';
+
     function redirect(): void {
         header("Location: index.php");
         exit;
@@ -131,44 +133,38 @@
     }
 
     function fetchTableData(): ?array {
-        $url = getBackendUrl("getall");
-
-        $options = [
-            'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/json\r\n",
-                'content' => json_encode(getConnectionParams()),
-                'ignore_errors' => true
-            ]
-        ];
-
-        $context = stream_context_create($options);
+        $backend = new Backend();
 
         try {
-            $response = file_get_contents($url, false, $context);
+            $params = getConnectionParams();
 
-            $status = $http_response_header[0] ?? 'Unknown';
+            $result = $backend->connect(
+                $params['host'],
+                $params['port'],
+                $params['db'],
+                $params['user'],
+                $params['pass'],
+                $params['cert']
+            );
 
-            if ( $response === false ) {
-                throw new Exception("Unable to contact backend");
+            if ( !$result["success"] ) {
+                throw new Exception($result["error"]);
             }
 
-            $tableData = json_decode($response, true);
+            $table = !empty($params["table"]) ? $params["table"] : $backend->getFirstTable();
 
-            if ( $tableData === null ) {
-                throw new Exception(
-                    "Invalid JSON received from server:\n\n" . $response . "\n\nStatus: " . $status
-                );
+            $result = $backend->fetchAll($table);
+
+            if ( !$result["success"] ) {
+                throw new Exception($result["error"]);
             }
 
-            if ( isset($tableData['error']) ) {
-                throw new Exception($tableData['error']);
-            }
+            $tableData = $backend->getData();
 
             if ( empty($_SESSION['table']) && !empty($tableData['data']) ) {
                 $_SESSION['table'] = array_key_first($tableData['data']);
             }
-            
+
             setSuccess( "Fetched data from the database successfully" );
 
             return $tableData;

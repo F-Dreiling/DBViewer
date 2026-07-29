@@ -10,10 +10,10 @@ class Backend {
     function connect($host, $port, $dbName, $user, $pass, $cert = ''): array {
         try {
             // Create connection string
-            $connectionString = "mysql:host=$host;port=$port;dbname=$dbName;charset=utf8mb4";
+            $connectionString = "mysql:host=$host;port=$port;dbname=$dbName";
             
             // Enable SSL if a certificate is provided
-            /*$options = [
+            $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ];
 
@@ -21,11 +21,8 @@ class Backend {
                 $options[PDO::MYSQL_ATTR_SSL_CA] = __DIR__ . "/../certs/" . basename($cert);
             }
 
-            $this->connection = new PDO( $connectionString, $user, $pass, $options );*/
-
             // Create PDO connection
-            $this->connection = new PDO( $connectionString, $user, $pass );
-            $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+            $this->connection = new PDO( $connectionString, $user, $pass, $options );
 
             $this->data = new Data();
 
@@ -132,6 +129,13 @@ class Backend {
 
     function getFirstTable(): string {
         return $this->tables[0] ?? '';
+    }
+
+    function getData(): array {
+        return [
+            "tables" => $this->tables,
+            "data"   => $this->data->jsonSerialize()
+        ];
     }
 
     function renderJson(): string {
