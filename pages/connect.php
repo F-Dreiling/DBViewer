@@ -4,7 +4,7 @@
 ?>
 
 <div class="dbv-card">
-    <p class="dbv-warning">Please enter the database and table name, username and optionally password.</p>
+    <p class="dbv-warning">Please enter your database connection details.</p>
 
     <form action="index.php" method="POST" class="dbv-form">
         <div class="dbv-grid">

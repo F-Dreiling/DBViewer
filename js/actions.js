@@ -13,7 +13,7 @@ function toggleSsl() {
 document.addEventListener("DOMContentLoaded", toggleSsl);
 
 function clickRow(key, id) {
-    const row = rows.find(r => r[key] == id);
+    const row = tableRows.find(r => r[key] == id);
 
     if (!row) {
         console.error("Row not found");

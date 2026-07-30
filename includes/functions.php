@@ -30,16 +30,6 @@
         unset($_SESSION['error']);
     }
 
-    function getBackendUrl(string $endpoint): string {
-        return
-            ( isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ? "https" : "http" )
-            . "://" 
-            . $_SERVER['HTTP_HOST'] 
-            . dirname( $_SERVER['PHP_SELF'] ) 
-            . "/server/server.php/" 
-            . $endpoint;
-    }
-
     function getConnectionParams(): array {
         return [
             'host'  => $_SESSION['host'],
@@ -122,10 +112,6 @@
         if ( !empty( trim($_POST['table']) ) ) {
             $_SESSION['table'] = $_POST['table'];
             $_SESSION['load'] = true;
-        }
-        else {
-            setError( "Missing table name" );
-            clearConnection();
         }
 
         redirect();

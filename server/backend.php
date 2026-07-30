@@ -170,7 +170,7 @@ class Backend {
     private function validateIdentifier($identifier): string {
         if ( !preg_match('/^[a-zA-Z0-9_]+$/', $identifier) ) {
             throw new Exception(
-                "Invalid database identifier"
+                "Invalid database/table identifier"
             );
         }
 
