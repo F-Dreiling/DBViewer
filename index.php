@@ -4,6 +4,7 @@
     require_once 'includes/functions.php';
 
     handleSubmit();
+    handleQuery();
     handleRefresh();
     handleBack();
     handleReset();

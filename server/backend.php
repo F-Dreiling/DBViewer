@@ -55,7 +55,7 @@ class Backend {
             $this->checkTableExists($table);
 
             // Fetch data from the table
-            $stmt = $this->connection->query( "SELECT * FROM `$table`" );
+            $stmt = $this->connection->query( "SELECT * FROM `$table` LIMIT 500" );
 
             // Get Data
             $this->populateData($stmt);
@@ -97,6 +97,28 @@ class Backend {
                 "success" => true
             ];
         } 
+        catch (Exception $e) {
+            return [
+                "success" => false,
+                "error" => $e->getMessage()
+            ];
+        }
+    }
+
+    function fetchQuery($query): array {
+        try {
+            $this->data->tableName = "Query Result";
+            
+            // Fetch data from the table
+            $stmt = $this->connection->query( $query );
+
+            // Get Data
+            $this->populateData($stmt);
+
+            return [
+                "success" => true
+            ];
+        }
         catch (Exception $e) {
             return [
                 "success" => false,

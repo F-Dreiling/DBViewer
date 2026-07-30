@@ -15,6 +15,7 @@
             $_SESSION['userName'],
             $_SESSION['passWord'],
             $_SESSION['cert'],
+            $_SESSION['query'],
             $_SESSION['load']
         );
     }
@@ -47,7 +48,8 @@
             'table' => $_SESSION['table'],
             'user'  => $_SESSION['userName'],
             'pass'  => $_SESSION['passWord'],
-            'cert'  => $_SESSION['cert']
+            'cert'  => $_SESSION['cert'],
+            'query' => $_SESSION['query']
         ];
     }
 
@@ -94,10 +96,28 @@
         redirect();
     }
 
+    function handleQuery(): void {
+        if ( !isset( $_POST['query'] ) ) {
+            return;
+        }
+
+        if ( empty( trim($_POST['query']) ) ) {
+            return;
+        }
+
+        $_SESSION['query'] = $_POST['query'];
+        $_SESSION['load'] = true;
+        unset($_SESSION['table']);
+
+        redirect();
+    }
+
     function handleRefresh(): void {
         if ( !isset( $_POST['refresh'] ) ) {
             return;
         }
+
+        unset($_SESSION['query']);
 
         if ( !empty( trim($_POST['table']) ) ) {
             $_SESSION['table'] = $_POST['table'];
@@ -115,8 +135,8 @@
         if ( !isset($_POST['back']) ) {
             return;
         }
-
-        unset($_SESSION['load']);
+        
+        unset($_SESSION['query'], $_SESSION['load']);
 
         redirect();
     }
@@ -151,9 +171,18 @@
                 throw new Exception($result["error"]);
             }
 
-            $table = !empty($params["table"]) ? $params["table"] : $backend->getFirstTable();
+            $table = '';
 
-            $result = $backend->fetchAll($table);
+            if ( !empty($params['query']) ) {
+                $query = $params['query'];
+
+                $result = $backend->fetchQuery($query);
+            }
+            else {
+                $table = !empty($params["table"]) ? $params["table"] : $backend->getFirstTable();
+
+                $result = $backend->fetchAll($table);
+            }
 
             if ( !$result["success"] ) {
                 throw new Exception($result["error"]);
@@ -161,8 +190,8 @@
 
             $tableData = $backend->getData();
 
-            if ( empty($_SESSION['table']) && !empty($tableData['data']) ) {
-                $_SESSION['table'] = array_key_first($tableData['data']);
+            if ( empty($_SESSION['table']) && empty($params['query']) ) {
+                $_SESSION['table'] = $table;
             }
 
             setSuccess( "Fetched data from the database successfully" );

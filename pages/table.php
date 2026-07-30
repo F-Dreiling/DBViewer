@@ -6,7 +6,16 @@
 
 <div class="dbv-card">
 
+<?php if ( !empty($_SESSION['query']) ): ?>
+
+    <h3>Query:</h3>
+    <pre class="dbv-query"><?= htmlentities($_SESSION['query']) ?></pre>
+
+<?php else: ?>
+
     <h3>Table: <?= htmlentities($tableName) ?></h3>
+
+<?php endif; ?>
 
 <?php if (empty($rows)): ?>
 
@@ -89,6 +98,8 @@
             </select>
             <input type="submit" name="refresh" class="dbv-button" value="Refresh">
         </form>
+
+        <input onclick="openQuery()" type="button" class="dbv-button" value="SQL Query">
 
         <input onclick="printJson()" type="button" class="dbv-button" value="Print JSON">
     </div>

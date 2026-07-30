@@ -186,6 +186,20 @@ h6 {
     font-weight: bold;
 }
 
+.dbv-query {
+    margin-bottom: 1rem;
+    padding: .75rem;
+
+    background: #1d1d1d;
+    border: 1px solid #555;
+    border-radius: 6px;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    font-family: Consolas, monospace;
+}
+
 
 /* ==========================================================
    Table
@@ -398,6 +412,14 @@ h6 {
     position: absolute;
     top: .5rem;
     right: .5rem;
+
+    cursor: pointer;
+}
+
+.dbv-popup-submit {
+    position: absolute;
+    top: .5rem;
+    right: 2.5rem;
 
     cursor: pointer;
 }
