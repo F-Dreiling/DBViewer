@@ -49,16 +49,13 @@ class Backend {
             // Validate table names
             $table = $this->validateIdentifier($table);
 
-            $this->data->tableName = $table;
-
             // Check if table exists
             $this->checkTableExists($table);
 
             // Fetch data from the table
             $stmt = $this->connection->query( "SELECT * FROM `$table` LIMIT 500" );
 
-            // Get Data
-            $this->populateData($stmt);
+            $this->populateData($stmt, $table);
 
             return [
                 "success" => true
@@ -78,8 +75,6 @@ class Backend {
             $table = $this->validateIdentifier($table);
             $key = $this->validateIdentifier($key);
 
-            $this->data->tableName = $table;
-
             // Check if table exists
             $this->checkTableExists($table);
 
@@ -90,8 +85,7 @@ class Backend {
 
             $stmt->execute();
 
-            // Get Data
-            $this->populateData($stmt);
+            $this->populateData($stmt, $table);
 
             return [
                 "success" => true
@@ -106,14 +100,11 @@ class Backend {
     }
 
     function fetchQuery($query): array {
-        try {
-            $this->data->tableName = "Query Result";
-            
+        try {            
             // Fetch data from the table
             $stmt = $this->connection->query( $query );
 
-            // Get Data
-            $this->populateData($stmt);
+            $this->populateData($stmt, "Query Result");
 
             return [
                 "success" => true
@@ -160,13 +151,6 @@ class Backend {
         ];
     }
 
-    function renderJson(): string {
-        return json_encode([
-            "tables" => $this->tables,
-            "data" => $this->data->jsonSerialize()
-        ]);
-    }
-
     private function validateIdentifier($identifier): string {
         if ( !preg_match('/^[a-zA-Z0-9_]+$/', $identifier) ) {
             throw new Exception(
@@ -190,7 +174,8 @@ class Backend {
         }
     }
 
-    private function populateData(PDOStatement $stmt): void {
+    private function populateData(PDOStatement $stmt, string $tableName): void {
+        $this->data->tableName = $tableName;
         $this->data->tableData = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

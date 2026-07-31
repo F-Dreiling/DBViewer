@@ -141,54 +141,50 @@
     function fetchTableData(): ?array {
         $backend = new Backend();
 
-        try {
-            $params = getConnectionParams();
+        $params = getConnectionParams();
 
-            $result = $backend->connect(
-                $params['host'],
-                $params['port'],
-                $params['db'],
-                $params['user'],
-                $params['pass'],
-                $params['cert']
-            );
+        $result = $backend->connect(
+            $params['host'],
+            $params['port'],
+            $params['db'],
+            $params['user'],
+            $params['pass'],
+            $params['cert']
+        );
 
-            if ( !$result["success"] ) {
-                throw new Exception($result["error"]);
-            }
-
-            $table = '';
-
-            if ( !empty($params['query']) ) {
-                $query = $params['query'];
-
-                $result = $backend->fetchQuery($query);
-            }
-            else {
-                $table = !empty($params["table"]) ? $params["table"] : $backend->getFirstTable();
-
-                $result = $backend->fetchAll($table);
-            }
-
-            if ( !$result["success"] ) {
-                throw new Exception($result["error"]);
-            }
-
-            $tableData = $backend->getData();
-
-            if ( empty($_SESSION['table']) && empty($params['query']) ) {
-                $_SESSION['table'] = $table;
-            }
-
-            setSuccess( "Fetched data from the database successfully" );
-
-            return $tableData;
-        }
-        catch (Exception $e) {
-            setError($e->getMessage());
+        if ( !$result["success"] ) {
+            setError($result["error"]);
             clearConnection();
-
             return null;
         }
+
+        $table = '';
+
+        if ( !empty($params['query']) ) {
+            $query = $params['query'];
+
+            $result = $backend->fetchQuery($query);
+        }
+        else {
+            $table = !empty($params["table"]) ? $params["table"] : $backend->getFirstTable();
+
+            $result = $backend->fetchAll($table);
+
+            if ( empty($_SESSION['table']) ) {
+                $_SESSION['table'] = $table;
+            }
+        }
+
+        $tableData = $backend->getData();
+
+        if (!$result["success"]) {
+            setError($result["error"]);
+            unset($_SESSION['query']);
+            return $tableData;
+        }
+
+        setSuccess( "Fetched data from the database successfully" );
+
+        return $tableData;
     }
 ?>
